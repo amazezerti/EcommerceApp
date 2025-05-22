@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders | Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar .profile-section {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .username {
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .upload-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .sidebar .upload-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-radius: 0;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding-left: 25px;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar .settings-submenu {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            margin: 0 15px;
+        }
+
+        .sidebar .logout-link {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 10px;
+        }
+
+        /* Main Content Styles */
+        .main-wrapper {
+            flex-grow: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .top-navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-size: 1.2rem;
+            margin-left: 15px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .main-content {
+            padding: 25px;
+            flex-grow: 1;
+        }
+
+        .content-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table thead th {
+            background-color: rgba(67, 97, 238, 0.05);
+            color: var(--primary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding: 12px 15px;
+            border: none;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.03);
+        }
+
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-top: 1px solid #eee;
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .customer-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: #f72585;
+        }
+
+        .status-shipped {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: #4cc9f0;
+        }
+
+        .status-delivered {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: #4361ee;
+        }
+
+        .action-select {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            background-color: white;
+            color: #555;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .order-date, .order-total {
+            color: #666;
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .modal-title {
+            font-weight: 600;
+        }
+
+        .modal .btn-close {
+            color: white;
+            box-shadow: none;
+            opacity: 0.8;
+        }
+
+        .modal .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .modal .form-control {
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+        }
+
+        .modal .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .modal .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        .modal .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Footer */
+        footer {
+            background-color: white;
+            padding: 15px 25px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                overflow: visible;
+            }
+
+            .sidebar:hover {
+                width: 280px;
+            }
+
+            .sidebar .profile-section, .sidebar .nav-link span {
+                display: none;
+            }
+
+            .sidebar:hover .profile-section, .sidebar:hover .nav-link span {
+                display: block;
+            }
+
+            .sidebar:hover .nav-link {
+                text-align: left;
+                display: flex;
+            }
+
+            .main-wrapper {
+                margin-left: 70px;
+            }
+
+            .sidebar .nav-link {
+                text-align: center;
+                justify-content: center;
+            }
+
+            .sidebar .nav-link i {
+                margin-right: 0;
+            }
+
+            .sidebar:hover .nav-link i {
+                margin-right: 10px;
+            }
+
+            .settings-submenu {
+                position: absolute;
+                left: 70px;
+                width: 200px;
+                top: 0;
+                visibility: hidden;
+                opacity: 0;
+                transition: all 0.3s ease;
+                box-shadow: 5px 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar:hover .settings-submenu {
+                position: static;
+                visibility: visible;
+                opacity: 1;
+                width: auto;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                width: 280px;
+                transform: translateX(0);
+            }
+
+            .main-wrapper {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: block !important;
+            }
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: #1a1d21;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .sidebar {
+            background: linear-gradient(135deg, #2c3e50, #1a1d21);
+        }
+
+        body.dark-mode .top-navbar,
+        body.dark-mode .content-card,
+        body.dark-mode footer {
+            background-color: #242830;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .table thead th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .table td {
+            border-top-color: #333;
+        }
+
+        body.dark-mode .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        body.dark-mode .action-select {
+            background-color: #333;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .page-title {
+            color: #4cc9f0;
+        }
+
+        body.dark-mode .action-btn {
+            color: #bbb;
+        }
+
+        body.dark-mode .action-btn:hover {
+            color: #4cc9f0;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Alert styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            min-width: 300px;
+            background-color: white;
+            color: #333;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .toast.success {
+            border-left: 4px solid #4cc9f0;
+        }
+
+        .toast.error {
+            border-left: 4px solid #f72585;
+        }
+
+        .toast-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .toast-body {
+            padding: 15px;
+        }
+
+        /* Animation for toast */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast {
+            animation: slideIn 0.3s forwards;
+        }
+
+        /* File upload styling */
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: inherit;
+            display: block;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-label:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hide the mobile toggle by default */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="profile-section">
+        <img th:src="@{${currentUser.profilePicPath} ?: '/images/profile-placeholder.jpg'}" alt="Profile Picture" class="profile-pic">
+        <div class="username" th:text="${currentUser.username}">Admin User</div>
+
+        <!-- Hidden file input -->
+        <form th:action="@{/upload-profile-pic}" method="post" enctype="multipart/form-data" id="profilePicForm">
+            <div class="file-upload">
+                <label for="profilePicInput" class="upload-label">
+                    <i class="fas fa-camera"></i> Change Photo
+                </label>
+                <input type="file" name="profilePic" id="profilePicInput" accept="image/*" onchange="document.getElementById('profilePicForm').submit();">
+            </div>
+        </form>
+    </div>
+
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+                <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+                <i class="fas fa-users"></i> <span>Manage Users</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/products">
+                <i class="fas fa-box"></i> <span>Manage Products</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="/admin/orders">
+                <i class="fas fa-shopping-cart"></i> <span>Manage Orders</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#settingsMenu">
+                <i class="fas fa-cog"></i> <span>Settings</span>
+            </a>
+            <div id="settingsMenu" class="collapse settings-submenu">
+                <div class="d-flex align-items-center p-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                        <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                    </div>
+                </div>
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="fas fa-key"></i> <span>Change Password</span>
+                </a>
+            </div>
+        </li>
+        <li class="nav-item logout-link">
+            <a class="nav-link" href="/logout">
+                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<!-- Main Content -->
+<div class="main-wrapper">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <div class="d-flex align-items-center">
+            <button class="mobile-toggle me-3">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">Order Management</h1>
+        </div>
+        <div class="navbar-actions">
+            <button class="action-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+            </button>
+            <button class="action-btn" title="Help">
+                <i class="fas fa-question-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>All Orders</h2>
+                <div class="d-flex">
+                    <div class="input-group me-2">
+                        <input type="text" class="form-control" placeholder="Search orders..." id="orderSearch">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                            <li><a class="dropdown-item" href="#" data-filter="all">All Orders</a></li>
+                            <li><a class="dropdown-item" href="#" data-filter="PENDING">Pending Orders</a></li>
+                            <li><a class="dropdown-item" href="#" data-filter="SHIPPED">Shipped Orders</a></li>
+                            <li><a class="dropdown-item" href="#" data-filter="DELIVERED">Delivered Orders</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td class="order-id" th:text="${'#' + order.id}"></td>
+                        <td class="customer-name" th:text="${order.user.username}"></td>
+                        <td class="order-date" th:text="${#temporals.format(order.orderDate, 'MMM dd, yyyy')}"></td>
+                        <td class="order-total" th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 2)}"></td>
+                        <td>
+                            <span th:class="${'status-badge status-' + #strings.toLowerCase(order.status)}" th:text="${order.status}"></span>
+                        </td>
+                        <td>
+                            <select class="action-select" onchange="updateOrderStatus(this, [[${order.id}]])">
+                                <option value="PENDING" th:selected="${order.status == 'PENDING'}">Pending</option>
+                                <option value="SHIPPED" th:selected="${order.status == 'SHIPPED'}">Shipped</option>
+                                <option value="DELIVERED" th:selected="${order.status == 'DELIVERED'}">Delivered</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr th:if="${orders.isEmpty()}">
+                        <td colspan="6" class="text-center py-4">
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                <p class="mb-0">No orders found</p>
+                                <small class="text-muted">New orders will appear here</small>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Orders pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 E-Commerce Admin Dashboard. All rights reserved.</p>
+    </footer>
+</div>
+
+<!-- Toast container for notifications -->
+<div class="toast-container"></div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/change-password}" method="post">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength mt-2">
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Password strength: <span class="strength-text">Weak</span></small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-match mt-2 d-none">
+                            <small class="text-danger">Passwords do not match</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Update Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Toggle dark mode
+    document.getElementById('darkModeToggle').addEventListener('change', function() {
+        document.body.classList.toggle('dark-mode', this.checked);
+        localStorage.setItem('darkMode', this.checked);
+    });
+
+    // Check if dark mode is enabled in localStorage
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeToggle').checked = true;
+    }
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Password strength meter
+    document.getElementById('newPassword').addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+
+        if (password.length >= 8) strength += 25;
+        if (password.match(/[a-z]+/)) strength += 25;
+        if (password.match(/[A-Z]+/)) strength += 25;
+        if (password.match(/[0-9]+/) || password.match(/[^a-zA-Z0-9]+/)) strength += 25;
+
+        const progressBar = document.querySelector('.password-strength .progress-bar');
+        const strengthText = document.querySelector('.strength-text');
+
+        progressBar.style.width = strength + '%';
+
+        if (strength <= 25) {
+            progressBar.style.backgroundColor = '#f72585';
+            strengthText.textContent = 'Weak';
+        } else if (strength <= 50) {
+            progressBar.style.backgroundColor = '#f8961e';
+            strengthText.textContent = 'Fair';
+        } else if (strength <= 75) {
+            progressBar.style.backgroundColor = '#4cc9f0';
+            strengthText.textContent = 'Good';
+        } else {
+            progressBar.style.backgroundColor = '#4361ee';
+            strengthText.textContent = 'Strong';
+        }
+    });
+
+    // Check if passwords match
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = this.value;
+        const matchDiv = document.querySelector('.password-match');
+
+        if (confirmPassword !== '') {
+            matchDiv.classList.remove('d-none');
+
+            if (newPassword === confirmPassword) {
+                matchDiv.querySelector('small').classList.remove('text-danger');
+                matchDiv.querySelector('small').classList.add('text-success');
+                matchDiv.querySelector('small').textContent = 'Passwords match';
+            } else {
+                matchDiv.querySelector('small').classList.remove('text-success');
+                matchDiv.querySelector('small').classList.add('text-danger');
+                matchDiv.querySelector('small').textContent = 'Passwords do not match';
+            }
+        } else {
+            matchDiv.classList.add('d-none');
+        }
+    });
+
+    // Mobile toggle for sidebar
+    document.querySelector('.mobile-toggle').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('show');
+    });
+
+    // Order status update function
+    function updateOrderStatus(select, orderId) {
+        const status = select.value;
+
+        // Show loading state
+        select.disabled = true;
+        const originalOption = select.querySelector(`option[value="${status}"]`);
+        originalOption.textContent = 'Updating...';
+
+        fetch(`/api/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(status)
+        }).then(response => {
+            if (response.ok) {
+                // Success notification
+                showToast('Status updated successfully', 'success');
+
+                // Update status badge
+                const row = select.closest('tr');
+                const statusBadge = row.querySelector('.status-badge');
+
+                statusBadge.className = `status-badge status-${status.toLowerCase()}`;
+                statusBadge.textContent = status;
+            } else {
+                // Error notification
+                showToast('Error updating order status', 'error');
+            }
+        }).catch(error => {
+            showToast('Network error, please try again', 'error');
+        }).finally(() => {
+            // Reset select state
+            select.disabled = false;
+            originalOption.textContent = status.charAt(0) + status.slice(1).toLowerCase();
+        });
+    }
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toastContainer = document.querySelector('.toast-container');
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const header = document.createElement('div');
+        header.className = 'toast-header';
+
+        const title = document.createElement('strong');
+        title.className = 'me-auto';
+        title.textContent = type === 'success' ? 'Success' : 'Error';
+
+        const closeButton = document.createElement('button');
+        closeButton.className = 'btn-close';
+        closeButton.setAttribute('data-bs-dismiss', 'toast');
+        closeButton.setAttribute('aria-label', 'Close');
+
+        header.appendChild(title);
+        header.appendChild(closeButton);
+
+        const body = document.createElement('div');
+        body.className = 'toast-body';
+        body.textContent = message;
+
+        toast.appendChild(header);
+        toast.appendChild(body);
+
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 300);
+        }, 3000);
+
+        closeButton.addEventListener('click', () => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 300);
+        });
+    }
+
+    // Filter orders functionality
+    document.querySelectorAll('[data-filter]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const filter = this.getAttribute('data-filter');
+            const rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                if (filter === 'all') {
+                    row.style.display = '';
+                } else {
+                    const statusCell = row.querySelector('.status-badge');
+                    if (statusCell && statusCell.textContent === filter) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            // Update filter button text
+            document.querySelector('#filterDropdown').innerHTML = `<i class="fas fa-filter"></i> ${filter === 'all' ? 'All Orders' : filter + ' Orders'}`;
+        });
+    });
+
+    // Search functionality
+    document.getElementById('orderSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const orderId = row.querySelector('.order-id')?.textContent.toLowerCase() || '';
+            const customer = row.querySelector('.customer-name')?.textContent.toLowerCase() || '';
+            const orderDate = row.querySelector('.order-date')?.textContent.toLowerCase() || '';
+
+            if (orderId.includes(searchTerm) || customer.includes(searchTerm) || orderDate.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+</body>
+</html>

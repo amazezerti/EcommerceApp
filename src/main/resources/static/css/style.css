@@ -1,0 +1,67 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.dark-mode {
+    background-color: #1a2526;
+    color: #f5f6fa;
+}
+
+.dark-mode .navbar, .dark-mode .sidebar, .dark-mode footer {
+    background-color: #2c3e50;
+    color: #f5f6fa;
+}
+
+.dark-mode .card {
+    background-color: #2c3e50;
+    color: #f5f6fa;
+}
+
+.navbar {
+    background-color: #2c3e50;
+    color: white;
+}
+
+.sidebar {
+    background-color: #2c3e50;
+    color: white;
+    height: 100vh;
+    position: fixed;
+    width: 250px;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.drawer {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #f8f9fa;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+    padding: 20px;
+}
+
+.drawer.active {
+    display: block;
+}

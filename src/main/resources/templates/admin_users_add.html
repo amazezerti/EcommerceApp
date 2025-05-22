@@ -1,0 +1,927 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User | Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --bg-light: #f8f9fa;
+            --bg-dark: #212529;
+            --text-dark: #212529;
+            --text-light: #f8f9fa;
+            --border-radius: 0.5rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            box-shadow: var(--box-shadow);
+            z-index: 1030;
+            transition: var(--transition);
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-pic-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-pic-overlay {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            padding: 0.25rem 1.5rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .submenu {
+            margin-left: 2.5rem;
+            display: none;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu .nav-link {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        /* Navbar Styles */
+        .top-navbar {
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .navbar-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .navbar-actions .btn {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            border: none;
+            transition: var(--transition);
+        }
+
+        .navbar-actions .btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Form Styles */
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .form-select {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            transition: var(--transition);
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .input-group-text {
+            background-color: var(--bg-light);
+            border-color: #ced4da;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Alert Styles */
+        .alert {
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1.25rem 1.5rem;
+        }
+
+        /* Footer Styles */
+        footer {
+            margin-left: 280px;
+            padding: 1.5rem;
+            background-color: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        /* Form Validation Visual Cues */
+        .password-strength {
+            height: 5px;
+            border-radius: 5px;
+            margin-top: 5px;
+            background-color: #e9ecef;
+        }
+
+        .password-strength-meter {
+            height: 100%;
+            border-radius: 5px;
+            width: 0%;
+            transition: var(--transition);
+        }
+
+        .weak {
+            width: 33%;
+            background-color: #dc3545;
+        }
+
+        .medium {
+            width: 66%;
+            background-color: #ffc107;
+        }
+
+        .strong {
+            width: 100%;
+            background-color: #198754;
+        }
+
+        .password-requirements {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .requirement i.valid {
+            color: #198754;
+        }
+
+        .requirement i.invalid {
+            color: #dc3545;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        body.dark-mode .top-navbar,
+        body.dark-mode .card,
+        body.dark-mode footer {
+            background-color: #2d3748;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .card-title,
+        body.dark-mode .navbar-title {
+            color: white;
+        }
+
+        body.dark-mode .navbar-actions .btn {
+            background-color: #4a5568;
+            color: white;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background-color: #4a5568;
+            border-color: #2d3748;
+            color: white;
+        }
+
+        body.dark-mode .input-group-text {
+            background-color: #4a5568;
+            border-color: #2d3748;
+            color: white;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #2d3748;
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content,
+            footer {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h3>Admin Panel</h3>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-pic-container">
+            <img th:src="@{${currentUser.profilePicPath} ?: '/images/profile-placeholder.jpg'}" alt="Profile Picture" class="profile-pic" id="profilePic">
+            <div class="profile-pic-overlay" onclick="document.getElementById('profilePicInput').click();">
+                <i class="fas fa-camera"></i>
+            </div>
+            <input type="file" id="profilePicInput" name="profilePic" accept="image/*" style="display: none;" onchange="document.getElementById('profilePicForm').submit();">
+            <form id="profilePicForm" th:action="@{/upload-profile-pic}" method="post" enctype="multipart/form-data" style="display: none;">
+                <input type="file" name="profilePic" accept="image/*" onchange="this.form.submit();">
+            </form>
+        </div>
+        <div class="username" th:text="${currentUser.username}">Admin</div>
+    </div>
+
+    <ul class="nav-menu list-unstyled">
+        <li class="nav-item">
+            <a href="/admin/dashboard" class="nav-link">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/admin/users" class="nav-link active">
+                <i class="fas fa-users"></i>
+                <span>Manage Users</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/admin/products" class="nav-link">
+                <i class="fas fa-box"></i>
+                <span>Manage Products</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/admin/orders" class="nav-link">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Manage Orders</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" id="settingsToggle">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+                <i class="fas fa-chevron-down ms-auto"></i>
+            </a>
+            <ul class="submenu" id="settingsSubmenu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" id="darkModeToggleLink">
+                        <i class="fas fa-moon"></i>
+                        <span>Dark Mode</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item mt-4">
+            <a href="/logout" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <div class="d-flex align-items-center">
+            <button class="menu-toggle me-3" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="navbar-title">Add New User</h1>
+        </div>
+        <div class="navbar-actions">
+            <button class="btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+            </button>
+            <button class="btn" title="Help">
+                <i class="fas fa-question-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Add User Form Card -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title">User Information</h5>
+            <a href="/admin/users" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Back to Users
+            </a>
+        </div>
+        <div class="card-body">
+            <div th:if="${error}" class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <form th:action="@{/admin/users/add}" th:object="${user}" method="post" id="addUserForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                            <input type="text" class="form-control" id="username" th:field="*{username}" required
+                                   placeholder="Enter username">
+                        </div>
+                        <div class="form-text">Username must be unique and at least 3 characters long.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                            <input type="email" class="form-control" id="email" th:field="*{email}" required
+                                   placeholder="Enter email address">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            <input type="password" class="form-control" id="password" th:field="*{password}" required
+                                   placeholder="Enter password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="password-strength-meter" id="passwordStrengthMeter"></div>
+                        </div>
+                        <div class="password-requirements mt-2">
+                            <div class="requirement" id="lengthReq">
+                                <i class="fas fa-circle invalid"></i> At least 8 characters long
+                            </div>
+                            <div class="requirement" id="upperReq">
+                                <i class="fas fa-circle invalid"></i> Contains uppercase letter
+                            </div>
+                            <div class="requirement" id="numberReq">
+                                <i class="fas fa-circle invalid"></i> Contains number
+                            </div>
+                            <div class="requirement" id="specialReq">
+                                <i class="fas fa-circle invalid"></i> Contains special character
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required
+                                   placeholder="Confirm password">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text" id="passwordMatch"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user-tag"></i>
+                                </span>
+                            <select class="form-select" id="role" th:field="*{role}" required>
+                                <option value="">Select role</option>
+                                <option value="ROLE_CUSTOMER">Customer</option>
+                                <option value="ROLE_ADMIN">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="window.location.href='/admin/users'">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i> Add User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-key me-2"></i>
+                    Change Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/change-password}" method="post" id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            <input type="password" class="form-control" id="confirmNewPassword" name="confirmPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmNewPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2025 E-Commerce. All rights reserved.</p>
+</footer>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Toggle sidebar
+    document.getElementById('menuToggle').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('show');
+    });
+
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+
+    document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const icon = this.querySelector('i');
+
+        if (confirmPasswordInput.type === 'password') {
+            confirmPasswordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            confirmPasswordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+
+    // Password strength checker
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        const meter = document.getElementById('passwordStrengthMeter');
+
+        // Check requirements
+        const hasLength = password.length >= 8;
+        const hasUpper = /[A-Z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        // Update requirement indicators
+        document.getElementById('lengthReq').querySelector('i').className = hasLength ? 'fas fa-circle valid' : 'fas fa-circle invalid';
+        document.getElementById('upperReq').querySelector('i').className = hasUpper ? 'fas fa-circle valid' : 'fas fa-circle invalid';
+        document.getElementById('numberReq').querySelector('i').className = hasNumber ? 'fas fa-circle valid' : 'fas fa-circle invalid';
+        document.getElementById('specialReq').querySelector('i').className = hasSpecial ? 'fas fa-circle valid' : 'fas fa-circle invalid';
+
+        // Calculate strength
+        let strength = 0;
+        if (hasLength) strength++;
+        if (hasUpper) strength++;
+        if (hasNumber) strength++;
+        if (hasSpecial) strength++;
+
+        // Update meter
+        meter.className = 'password-strength-meter';
+        if (password.length === 0) {
+            meter.style.width = '0%';
+        } else if (strength <= 1) {
+            meter.classList.add('weak');
+        } else if (strength <= 3) {
+            meter.classList.add('medium');
+        } else {
+            meter.classList.add('strong');
+        }
+    });
+
+    // Check password match
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const passwordMatch = document.getElementById('passwordMatch');
+
+        if (confirmPassword === '') {
+            passwordMatch.textContent = '';
+            passwordMatch.className = 'form-text';
+        } else if (password === confirmPassword) {
+            passwordMatch.textContent = 'Passwords match';
+            passwordMatch.className = 'form-text text-success';
+        } else {
+            passwordMatch.textContent = 'Passwords do not match';
+            passwordMatch.className = 'form-text text-danger';
+        }
+    });
+
+    // Toggle settings submenu
+    document.getElementById('settingsToggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        const submenu = document.getElementById('settingsSubmenu');
+        const icon = this.querySelector('.fa-chevron-down');
+
+        submenu.classList.toggle('show');
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
+    });
+
+    // Toggle dark mode
+    document.getElementById('darkModeToggleLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+
+        // Save preference to localStorage
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDarkMode);
+    });
+
+    // Load dark mode preference from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+        const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+        if (darkModeEnabled) {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Initialize password modal toggles
+        document.getElementById('toggleCurrentPassword')?.addEventListener('click', function() {
+            togglePasswordVisibility('currentPassword', this);
+        });
+
+        document.getElementById('toggleNewPassword')?.addEventListener('click', function() {
+            togglePasswordVisibility('newPassword', this);
+        });
+
+        document.getElementById('toggleConfirmNewPassword')?.addEventListener('click', function() {
+            togglePasswordVisibility('confirmNewPassword', this);
+        });
+    });
+
+    // Helper function to toggle password visibility
+    function togglePasswordVisibility(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Form validation
+    document.getElementById('addUserForm')?.addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            const passwordMatch = document.getElementById('passwordMatch');
+            passwordMatch.textContent = 'Passwords must match to proceed';
+            passwordMatch.className = 'form-text text-danger';
+            document.getElementById('confirmPassword').focus();
+            return false;
+        }
+
+        // Basic password strength validation
+        const hasLength = password.length >= 8;
+        const hasUpper = /[A-Z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        if (!(hasLength && (hasUpper || hasNumber || hasSpecial))) {
+            e.preventDefault();
+            alert('Please ensure your password meets the minimum security requirements');
+            document.getElementById('password').focus();
+            return false;
+        }
+
+        return true;
+    });
+
+    // Profile picture preview
+    document.getElementById('profilePic')?.addEventListener('click', function() {
+        document.getElementById('profilePicInput').click();
+    });
+
+    document.getElementById('profilePicInput')?.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                document.getElementById('profilePic').src = e.target.result;
+            };
+
+            reader.readAsDataURL(this.files[0]);
+
+            // Submit the form after preview
+            setTimeout(() => {
+                document.getElementById('profilePicForm').submit();
+            }, 500);
+        }
+    });
+</script>
+</body>
+</html>

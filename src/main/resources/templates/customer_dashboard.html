@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --sidebar-width: 260px;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode {
+            background-color: #1e293b;
+            color: #d1d5db;
+        }
+
+        /* Navbar styling */
+        .navbar {
+            background-color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 1rem;
+            z-index: 1030;
+            position: fixed;
+            width: calc(100% - var(--sidebar-width));
+            left: var(--sidebar-width);
+            top: 0;
+        }
+
+        body.dark-mode .navbar {
+            background-color: var(--secondary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        .navbar .nav-link {
+            position: relative;
+            margin: 0 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            color: white;
+        }
+
+        .navbar .nav-link:hover {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .navbar .nav-link.active {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .navbar .nav-link.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 61px;
+            width: var(--sidebar-width);
+            height: calc(100vh - 61px);
+            background-color: var(--primary);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-speed);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        body.dark-mode .sidebar {
+            background-color: var(--secondary);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .profile-pic-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid var(--light);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-pic-overlay {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--light);
+            color: var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .profile-pic-overlay:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        body.dark-mode .username {
+            color: #d1d5db;
+        }
+
+        .sidebar-upload-form {
+            display: none;
+        }
+
+        .sidebar .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: all var(--transition-speed);
+        }
+
+        body.dark-mode .sidebar .nav-link {
+            color: #d1d5db;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        body.dark-mode .sidebar .nav-link:hover,
+        body.dark-mode .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #d1d5db;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .settings-submenu {
+            padding-left: 2.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .settings-submenu {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .settings-submenu .nav-link {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .form-switch {
+            padding-left: 2.5rem;
+        }
+
+        /* Main content styling */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            flex: 1;
+            transition: margin-left var(--transition-speed);
+        }
+
+        body.dark-mode .main-content {
+            background-color: #1e293b;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .page-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        body.dark-mode .page-title {
+            color: #d1d5db;
+        }
+
+        /* Card styling */
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            border-radius: 0.5rem;
+            background-color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        body.dark-mode .card {
+            background-color: #334155;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .card:hover {
+            background: linear-gradient(145deg, #334155, rgba(67, 97, 238, 0.1));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .card-title {
+            font-size: 16px;
+            color: #9ca3af;
+            margin-bottom: 5px;
+        }
+
+        body.dark-mode .card-title {
+            color: #9ca3af;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        body.dark-mode .card-value {
+            color: #d1d5db;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        body.dark-mode .card-icon {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: #4cc9f0;
+        }
+
+        .card-trend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .trend-up {
+            color: #198754;
+        }
+
+        body.dark-mode .trend-up {
+            color: #34d399;
+        }
+
+        .trend-down {
+            color: #dc3545;
+        }
+
+        body.dark-mode .trend-down {
+            color: #f87171;
+        }
+
+        /* Chart styling */
+        .chart-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .chart-container {
+            background-color: #334155;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        body.dark-mode .chart-title {
+            color: #d1d5db;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-action-btn {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition-speed);
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        body.dark-mode .chart-action-btn {
+            background-color: #4b5563;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #d1d5db;
+        }
+
+        .chart-action-btn:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.1), rgba(63, 55, 201, 0.1));
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .chart-action-btn:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.2), rgba(63, 55, 201, 0.2));
+            border-color: #4cc9f0;
+        }
+
+        .chart-action-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .chart-action-btn.active {
+            background-color: var(--secondary);
+            color: #d1d5db;
+        }
+
+        .pie-chart-visual {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            background-color: #f8f9fa;
+        }
+
+        body.dark-mode .pie-chart-visual {
+            background-color: #4b5563;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: var(--transition-speed);
+        }
+
+        .legend-item:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.05), rgba(63, 55, 201, 0.05));
+        }
+
+        body.dark-mode .legend-item:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.1), rgba(63, 55, 201, 0.1));
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        .legend-label,
+        .legend-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        body.dark-mode .legend-label,
+        body.dark-mode .legend-value {
+            color: #d1d5db;
+        }
+
+        /* Transaction and Task styling */
+        .recent-transactions,
+        .tasks-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .recent-transactions,
+        body.dark-mode .tasks-container {
+            background-color: #334155;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        body.dark-mode .section-title {
+            color: #d1d5db;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        body.dark-mode .view-all {
+            color: #4cc9f0;
+        }
+
+        .view-all:hover {
+            text-decoration: underline;
+        }
+
+        .transaction-item,
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            transition: var(--transition-speed);
+        }
+
+        .transaction-item:hover,
+        .task-item:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.05), rgba(63, 55, 201, 0.05));
+        }
+
+        body.dark-mode .transaction-item:hover,
+        body.dark-mode .task-item:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.1), rgba(63, 55, 201, 0.1));
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        body.dark-mode .transaction-icon {
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .transaction-title,
+        .transaction-amount,
+        .task-title {
+            font-weight: 500;
+            color: #333;
+        }
+
+        body.dark-mode .transaction-title,
+        body.dark-mode .transaction-amount,
+        body.dark-mode .task-title {
+            color: #d1d5db;
+        }
+
+        .transaction-date,
+        .task-due {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .task-action-btn {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition-speed);
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        body.dark-mode .task-action-btn {
+            background-color: #4b5563;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #d1d5db;
+        }
+
+        .task-action-btn:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.1), rgba(63, 55, 201, 0.1));
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .task-action-btn:hover {
+            background: linear-gradient(145deg, rgba(67, 97, 238, 0.2), rgba(63, 55, 201, 0.2));
+            border-color: #4cc9f0;
+        }
+
+        .task-action-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .task-action-btn.active {
+            background-color: var(--secondary);
+            color: #d1d5db;
+        }
+
+        .task-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            margin-right: 15px;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition-speed);
+        }
+
+        body.dark-mode .task-checkbox {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .task-checkbox:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .task-checkbox:checked {
+            background-color: #4cc9f0;
+            border-color: #4cc9f0;
+        }
+
+        .task-checkbox:checked::before {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+        }
+
+        .priority-tag {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .priority-medium {
+            background-color: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+        }
+
+        .priority-low {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        /* Product card styling */
+        .product-card {
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-card .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .product-card .card-img-top {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .product-card .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        body.dark-mode .product-card .card-title {
+            color: #d1d5db;
+        }
+
+        .product-card .card-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        body.dark-mode .product-card .card-text {
+            color: #b0b8c4;
+        }
+
+        .product-card .form-control {
+            width: 80px;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        /* Full-page products section */
+        .full-page {
+            position: fixed;
+            top: 61px;
+            left: var(--sidebar-width);
+            right: 0;
+            bottom: 50px;
+            overflow-y: auto;
+            z-index: 1000;
+            background-color: #f5f7fb;
+            padding: 2rem;
+        }
+
+        body.dark-mode .full-page {
+            background-color: #1e293b;
+        }
+
+        /* Table styling */
+        .table {
+            margin-bottom: 0;
+        }
+
+        body.dark-mode .table {
+            color: #d1d5db;
+        }
+
+        .table th {
+            font-weight: 600;
+            background-color: rgba(0, 0, 0, 0.02);
+            border-bottom-width: 1px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            color: #333;
+        }
+
+        body.dark-mode .table th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #d1d5db;
+        }
+
+        .table td {
+            color: #333;
+        }
+
+        body.dark-mode .table td {
+            color: #d1d5db;
+        }
+
+        /* Footer styling */
+        footer {
+            background-color: white;
+            padding: 1rem;
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-left: var(--sidebar-width);
+            transition: margin-left var(--transition-speed);
+        }
+
+        body.dark-mode footer {
+            background-color: #334155;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #d1d5db;
+        }
+
+        footer p {
+            margin-bottom: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        body.dark-mode footer p {
+            color: #9ca3af;
+        }
+
+        /* Modal styling */
+        .modal-content {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            background-color: white;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #334155;
+        }
+
+        .modal-header {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        body.dark-mode .modal-header {
+            background-color: var(--secondary);
+        }
+
+        .modal-title {
+            font-weight: 600;
+        }
+
+        .modal .form-label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        body.dark-mode .modal .form-label {
+            color: #d1d5db;
+        }
+
+        .modal .form-control {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        body.dark-mode .modal .form-control {
+            background-color: #4b5563;
+            color: #d1d5db;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Button styling */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: none;
+            transition: all var(--transition-speed);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        /* Collapse visibility */
+        .collapse.show {
+            display: block !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content,
+            footer,
+            .navbar {
+                margin-left: 0;
+                width: 100%;
+                left: 0;
+            }
+
+            .menu-toggle {
+                display: block !important;
+            }
+
+            .full-page {
+                left: 0;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <button class="menu-toggle me-2">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="navbar-brand text-white" href="/customer/dashboard">
+            <i class="fas fa-shopping-bag me-2"></i>E-Commerce
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link text-white active" href="/customer/dashboard">
+                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+            </a>
+            <a class="nav-link text-white" href="/customer/cart">
+                <i class="fas fa-shopping-cart me-1"></i> Cart
+            </a>
+            <a class="nav-link text-white" href="#" id="browseProductsLink">
+                <i class="fas fa-box me-1"></i> Browse Products
+            </a>
+            <a class="nav-link text-white" href="/customer/orders">
+                <i class="fas fa-history me-1"></i> Orders
+            </a>
+            <a class="nav-link text-white" href="/logout">
+                <i class="fas fa-sign-out-alt me-1"></i> Logout
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="profile-pic-container">
+            <img th:src="@{${currentUser.profilePicPath} ?: '/images/profile-placeholder.jpg'}" alt="Profile Picture" class="profile-pic">
+            <div class="profile-pic-overlay" id="profilePicOverlay">
+                <i class="fas fa-camera"></i>
+            </div>
+        </div>
+        <div class="username" th:text="${currentUser.username}"></div>
+        <form th:action="@{/upload-profile-pic}" method="post" enctype="multipart/form-data" class="sidebar-upload-form" id="profilePicForm">
+            <input type="file" name="profilePic" accept="image/*" class="form-control form-control-sm mb-2" id="profilePicInput">
+            <button type="submit" class="btn btn-primary btn-sm w-100">Update Photo</button>
+        </form>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" href="/customer/dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/customer/cart">
+                <i class="fas fa-shopping-cart"></i> Cart
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/customer/orders">
+                <i class="fas fa-history"></i> Order History
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" id="browseProductsSidebarLink">
+                <i class="fas fa-box"></i> Browse Products
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" id="settingsLink">
+                <i class="fas fa-cog"></i> Settings
+                <i class="fas fa-chevron-down ms-auto"></i>
+            </a>
+            <div class="settings-submenu collapse" id="settingsMenu">
+                <div class="form-check form-switch py-2">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                </div>
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h2 class="page-title">Welcome, <span th:text="${currentUser.username}"></span>!</h2>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="dashboard-cards">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Total Orders</div>
+                    <div class="card-value">0</div>
+                </div>
+                <div class="card-icon"><i class="fas fa-box"></i></div>
+            </div>
+            <div class="card-trend"><i class="fas fa-arrow-up trend-up"></i> 5%</div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Total Spent</div>
+                    <div class="card-value">$0.00</div>
+                </div>
+                <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+            </div>
+            <div class="card-trend"><i class="fas fa-arrow-down trend-down"></i> 2%</div>
+        </div>
+    </div>
+
+    <!-- Dashboard Charts -->
+    <div class="dashboard-charts">
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">Order Trends</div>
+                <div class="chart-actions">
+                    <button class="chart-action-btn">1W</button>
+                    <button class="chart-action-btn active">1M</button>
+                    <button class="chart-action-btn">1Y</button>
+                </div>
+            </div>
+            <div class="pie-chart">
+                <div class="pie-chart-visual">Chart Placeholder</div>
+                <div class="pie-chart-legend">
+                    <div class="legend-item"><div class="legend-color" style="background-color: #4361ee;"></div><div class="legend-label">Orders</div><div class="legend-value">0</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">Sales Summary</div>
+                <div class="chart-actions">
+                    <button class="chart-action-btn">Day</button>
+                    <button class="chart-action-btn active">Week</button>
+                </div>
+            </div>
+            <div class="pie-chart-visual">Chart Placeholder</div>
+        </div>
+    </div>
+
+    <!-- Dashboard Activity -->
+    <div class="dashboard-activity">
+        <div class="recent-transactions">
+            <div class="section-header">
+                <div class="section-title">Recent Transactions</div>
+                <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="transaction-list">
+                <div class="transaction-item">
+                    <div class="transaction-icon" style="background-color: rgba(67, 97, 238, 0.1);"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">Product Purchase</div>
+                        <div class="transaction-date">May 19, 2025</div>
+                    </div>
+                    <div class="transaction-amount">$0.00</div>
+                </div>
+            </div>
+        </div>
+        <div class="tasks-container">
+            <div class="section-header">
+                <div class="section-title">Tasks</div>
+                <div class="task-actions">
+                    <button class="task-action-btn">All</button>
+                    <button class="task-action-btn active">Pending</button>
+                </div>
+            </div>
+            <div class="task-list">
+                <div class="task-item">
+                    <input type="checkbox" class="task-checkbox">
+                    <div class="task-details">
+                        <div class="task-title">Review Order</div>
+                        <div class="task-due">Due: May 20, 2025</div>
+                    </div>
+                    <div class="priority-tag priority-medium">Medium</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Section -->
+    <div class="collapse" id="cartSection">
+        <div class="d-flex justify-content-between align-items-center mt-5">
+            <h3>Your Cart</h3>
+            <button class="btn btn-secondary btn-sm" id="cartPreviewToggle" data-bs-toggle="collapse" data-bs-target="#cartSection">
+                <i class="fas fa-eye me-1"></i> View Cart Preview
+            </button>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${cartItems != null}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${cartItems}">
+                            <td th:text="${item.productName}"></td>
+                            <td th:text="${'$' + #numbers.formatDecimal(item.price, 1, 2)}"></td>
+                            <td th:text="${item.quantity}"></td>
+                            <td th:text="${'$' + #numbers.formatDecimal(item.price * item.quantity, 1, 2)}"></td>
+                            <td>
+                                <form th:action="@{/customer/cart/remove}" method="post">
+                                    <input type="hidden" name="productId" th:value="${item.productId}">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${cartItems.isEmpty()}">
+                            <td colspan="5">Your cart is empty.</td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="4"><strong>Total:</strong></td>
+                            <td><strong th:text="${'$' + #numbers.formatDecimal(cartTotal, 1, 2)}"></strong></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                    <div class="text-end">
+                        <a th:href="@{/customer/cart}" class="btn btn-primary">View Full Cart</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="collapse" id="productsSection">
+        <div class="d-flex justify-content-between align-items-center mt-5">
+            <h3>Browse Products</h3>
+            <button class="btn btn-secondary btn-sm" id="productsToggle">
+                <i class="fas fa-eye me-1"></i> View Products
+            </button>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${products != null}">
+                    <div class="row">
+                        <div class="col-md-4 mb-4" th:each="product : ${products}">
+                            <div class="card product-card">
+                                <img th:src="@{${product.imagePath} ?: '/images/product-placeholder.jpg'}" class="card-img-top" alt="Product Image">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title" th:text="${product.name}"></h5>
+                                    <p class="card-text" th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}"></p>
+                                    <form th:action="@{/customer/cart/add}" method="post">
+                                        <input type="hidden" name="productId" th:value="${product.id}">
+                                        <input type="number" name="quantity" value="1" min="1" th:max="${product.stock}" class="form-control mb-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${products.isEmpty()}">
+                        <p>No products available.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex>    <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form th:action="@{/change-password}" method="post">
+                <div class="mb-3">
+                    <label for="currentPassword" class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div class="mb-3">
+                    <label for="newPassword" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+
+<footer>
+    <p>© 2025 E-Commerce. All rights reserved.</p>
+</footer>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const darkModeToggle = document.querySelector('#darkModeToggle');
+        const body = document.body;
+        const productsSection = document.querySelector('#productsSection');
+        const cartSection = document.querySelector('#cartSection');
+        const profilePicOverlay = document.querySelector('#profilePicOverlay');
+        const profilePicForm = document.querySelector('#profilePicForm');
+        const settingsLink = document.querySelector('#settingsLink');
+        const settingsMenu = document.querySelector('#settingsMenu');
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const browseProductsLink = document.querySelector('#browseProductsLink');
+        const browseProductsSidebarLink = document.querySelector('#browseProductsSidebarLink');
+        const dashboardCards = document.querySelector('.dashboard-cards');
+        const dashboardCharts = document.querySelector('.dashboard-charts');
+        const dashboardActivity = document.querySelector('.dashboard-activity');
+        const pageHeader = document.querySelector('.page-header');
+
+        // Hide sections on load
+        productsSection.classList.remove('show');
+        cartSection.classList.remove('show');
+
+        // Dark mode toggle
+        darkModeToggle.addEventListener('change', function() {
+            body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+        });
+
+        // Load dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Profile picture upload
+        profilePicOverlay.addEventListener('click', function() {
+            profilePicForm.style.display = profilePicForm.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Settings menu toggle
+        settingsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            settingsMenu.classList.toggle('show');
+        });
+
+        // Sidebar toggle for mobile
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+        });
+
+        // Full-page products view
+        function showFullPageProducts() {
+            productsSection.classList.add('show', 'full-page');
+            cartSection.classList.remove('show');
+            dashboardCards.style.display = 'none';
+            dashboardCharts.style.display = 'none';
+            dashboardActivity.style.display = 'none';
+            pageHeader.style.display = 'none';
+        }
+
+        function resetDashboardView() {
+            productsSection.classList.remove('show', 'full-page');
+            cartSection.classList.remove('show');
+            dashboardCards.style.display = 'block';
+            dashboardCharts.style.display = 'block';
+            dashboardActivity.style.display = 'block';
+            pageHeader.style.display = 'flex';
+        }
+
+        browseProductsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showFullPageProducts();
+        });
+
+        browseProductsSidebarLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showFullPageProducts();
+        });
+
+        // Reset view when clicking Dashboard link
+        document.querySelector('a[href="/customer/dashboard"]').addEventListener('click', function(e) {
+            resetDashboardView();
+        });
+    });
+</script>
+</body>
+</html>
