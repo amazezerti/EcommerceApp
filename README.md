@@ -53,7 +53,7 @@ Frontend: Thymeleaf templates in src/main/resources/templates/, static resources
 Directory: C:\Users\amazezerti\ecommerce (Windows 11 Pro).
 IDE: IntelliJ Community Edition.
 
-Local Deployment Instructions
+# Local Deployment Instructions
 Prerequisites
 
 Maven (in system PATH).
@@ -80,7 +80,7 @@ Connects to local PostgreSQL (localhost:5432, ecommerce_db, postgres, 1234).
 
 Heroku Deployment
 Overview
-The application is successfully deployed on Heroku with Heroku Postgres, ensuring global access for account creation, product browsing, and admin management. The deployment uses JDK 24 and Maven, with environment variables configured for seamless operation.
+The application will be deployed on Heroku with Heroku Postgres, ensuring global access for account creation, product browsing, and admin management. The deployment uses JDK 24 and Maven, with environment variables configured for seamless operation.
 Setup Files
 
 Procfile:web: java -Dserver.port=$PORT -jar target/ecommerce-0.0.1-SNAPSHOT.jar
@@ -115,7 +115,7 @@ heroku config:set SPRING_DATASOURCE_PASSWORD=[password] -a ecommerceapplication
 heroku config:set SPRING_JPA_HIBERNATE_DDL_AUTO=update -a ecommerceapplication
 
 
-Replace [DATABASE_URL], [user], [password] with Heroku Postgres credentials.
+
 
 
 Push to Heroku:git push heroku main
@@ -128,7 +128,7 @@ Confirms Spring Boot startup (Started Application).
 
 
 
-Testing Endpoints
+# Testing Endpoints
 
 Landing Page: /
 Login: /login (includes signup link).
